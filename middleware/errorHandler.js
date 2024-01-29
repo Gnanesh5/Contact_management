@@ -15,6 +15,9 @@ const errorHandler = (err, req, res, next) => {
             res.json({title:"Unauthorized user" ,message: err.message, stackTrace: err.stack});
         case constants.INTERNAL_SERVER_ERROR:
             res.json({title:"Internal Server Error" ,message: err.message, stackTrace: err.stack});
+        default:
+            console.log("No error found, OK!!!");
+            break;
     }
 }
 

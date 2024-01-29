@@ -1,5 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv').config();
+const mongoose = require('mongoose')
 // const http = require('http');
 const bodyParser = require('body-parser')
 const errorHandler = require('./middleware/errorHandler')
