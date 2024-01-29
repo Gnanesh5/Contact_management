@@ -1,7 +1,9 @@
 const express = require('express');
 const asyncHandler = require('express-async-handler');
-const User = require('../models/userModel')
+const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const validateToken = require('../middleware/validateTokenHandler');
 
 //@desc - register a user
 //@route POST /api/users/register
@@ -39,13 +41,27 @@ const registerUser = asyncHandler(async(req, res) => {
 //@access PUBLIC
 
 const loginUser = asyncHandler(async(req, res) => {
-    
-    const user = await User.find();
-    if(!user) {
-        res.status(404);
-        throw new Error("No user found with the detaisl provided")
+    const {email, password} = req.body;
+    if(!email || !password) {
+        res.status(400);
+        throw new Error("Provide all the details")
     }
-    res.status(200).json({user})
+    const existUser = await User.findOne({email});
+    if(existUser && (await bcrypt.compare(password, existUser.password))) {
+        const accessToken = jwt.sign({
+            user: {
+                username: existUser.username,
+                email: existUser.email,
+                id: existUser.id
+            },
+        }, process.env.ACCESS_TOKEN_SECRET,
+        {expiresIn: "30m"}
+        );
+        res.status(200).json({accessToken});
+    } else {
+        res.status(401);
+        throw new Error("Email/password is not valid")
+    }
 })
 
 
@@ -54,7 +70,8 @@ const loginUser = asyncHandler(async(req, res) => {
 //@access PRIVATE
 
 const currentUser = asyncHandler(async(req, res) => {
-    res.json({message:"current user information"})
+    res.status(200)
+    res.json(req.user)
 })
 
 
